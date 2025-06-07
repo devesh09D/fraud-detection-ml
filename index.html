@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fraud Detection</title>
+</head>
+<body>
+  <h1>Fraud Detection</h1>
+
+  <form id="fraudForm">
+    <label>Amount: <input type="number" id="amount" step="0.01" required /></label><br/><br/>
+    <label>Location (as code): <input type="number" id="location" required /></label><br/><br/>
+    <label>Timestamp (Unix seconds): <input type="number" id="timestamp" required /></label><br/><br/>
+    <button type="submit">Check Fraud</button>
+  </form>
+
+  <h3 id="result"></h3>
+
+  <script>
+    const form = document.getElementById('fraudForm');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        amount: parseFloat(document.getElementById('amount').value),
+        location: parseInt(document.getElementById('location').value),
+        timestamp: parseInt(document.getElementById('timestamp').value)
+      };
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not OK');
+        }
+
+        const json = await response.json();
+        result.textContent = json.fraudulent
+          ? '⚠️ Warning: Fraudulent transaction detected!'
+          : '✅ Transaction looks safe.';
+      } catch (error) {
+        result.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+</body>
+</html>
